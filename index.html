@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Day</title>
+
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My Day">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<!-- Theme color -->
+<meta name="theme-color" content="#fdf6ec">
+
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf6ec;
+    --card: #ffffff;
+    --chore: #ff7eb3;
+    --fun: #5bc8f5;
+    --accent: #ffcc44;
+    --text: #2d2d2d;
+    --muted: #aaa;
+    --shadow: 0 8px 32px rgba(0,0,0,0.10);
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    background-image:
+      radial-gradient(circle at 10% 20%, #ffe0f0 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, #d0f0ff 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, #fff8dc 0%, transparent 60%);
+  }
+
+  .planner {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .header { text-align: center; }
+
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.6rem;
+    color: var(--text);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .header .date {
+    font-size: 0.95rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    border: 2px solid #f0e8d8;
+  }
+
+  .slot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .slot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fafafa;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 2px dashed #e0d8cc;
+    min-height: 64px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+
+  .slot.filled { border-style: solid; background: #fff; }
+  .slot.filled.chore { border-color: var(--chore); }
+  .slot.filled.fun { border-color: var(--fun); }
+
+  .slot-number {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: #ccc;
+    min-width: 28px;
+    text-align: center;
+    transition: color 0.2s;
+  }
+
+  .slot.filled .slot-number { color: var(--text); }
+
+  .slot-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .slot-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: 20px;
+    padding: 2px 10px;
+    display: inline-block;
+    width: fit-content;
+  }
+
+  .slot-label.chore { background: #ffe0ef; color: #c0366a; }
+  .slot-label.fun { background: #d8f2fd; color: #1a7fa0; }
+
+  .slot-task { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .slot-empty-text { font-size: 0.9rem; color: #c8c0b8; font-weight: 600; }
+
+  .slot-done {
+    background: none;
+    border: 2px solid #e0d8cc;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 5px 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    transition: all 0.18s;
+    flex-shrink: 0;
+  }
+
+  .slot-done:hover {
+    border-color: #5bc87a;
+    background: #edfff3;
+    transform: scale(1.08);
+  }
+
+  .slot-done .done-check {
+    font-size: 1.05rem;
+    line-height: 1;
+    color: #b0c8b0;
+    transition: color 0.18s;
+  }
+
+  .slot-done:hover .done-check { color: #2da060; }
+
+  .slot-done .done-label {
+    font-size: 0.52rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #c8bfb0;
+    transition: color 0.18s;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .slot-done:hover .done-label { color: #2da060; }
+
+  /* Slide-off animation */
+  @keyframes slideOff {
+    0%   { transform: translateX(0); opacity: 1; max-height: 80px; margin-bottom: 0; }
+    30%  { transform: translateX(8px); }
+    100% { transform: translateX(110%); opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: -12px; }
+  }
+
+  .slot.removing {
+    animation: slideOff 0.48s cubic-bezier(0.55, 0, 0.7, 1) forwards;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* Star burst particle */
+  .star-particle {
+    position: fixed;
+    pointer-events: none;
+    font-size: 1.2rem;
+    z-index: 9999;
+    animation: starFly 0.7s ease-out forwards;
+  }
+
+  @keyframes starFly {
+    0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(var(--rot)); opacity: 0; }
+  }
+
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #5a4000;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #d4a800, 0 6px 16px rgba(255,200,0,0.3);
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+
+  .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #d4a800, 0 10px 20px rgba(255,200,0,0.35); }
+  .add-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4a800; }
+  .add-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 18px;
+    border: 2.5px solid #e0d8cc;
+    border-radius: 14px;
+    background: white;
+    color: #b0a090;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .clear-btn:hover { border-color: #ff7eb3; color: #c0366a; background: #fff5f8; }
+  .clear-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Mood Scale */
+  .mood-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    border: 2px solid #f0e8d8;
+  }
+
+  .mood-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mood-bar-wrap {
+    position: relative;
+    height: 28px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: linear-gradient(to right, #5bc8f5, #b6e8b0, #ffcc44, #ffaa44, #ff6b9d);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+  }
+
+  .mood-bar-indicator {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    border: 3px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+  }
+
+  .mood-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mood-message {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-top: 10px;
+    min-height: 22px;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,20,10,0.35);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 24px 22px;
+    width: 100%;
+    max-width: 400px;
+    margin: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 2px solid #f0e8d8;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+  .modal h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* Saved section */
+  .saved-section { margin-bottom: 4px; }
+
+  .saved-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .saved-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 110px;
+    overflow-y: auto;
+    padding-bottom: 2px;
+  }
+
+  .saved-chips::-webkit-scrollbar { width: 4px; }
+  .saved-chips::-webkit-scrollbar-thumb { background: #e0d8cc; border-radius: 4px; }
+
+  .saved-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px 5px 8px;
+    border-radius: 20px;
+    border: 2px solid #e8e0d6;
+    background: #fafafa;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Nunito', sans-serif;
+    user-select: none;
+  }
+
+  .saved-chip:hover { border-color: var(--accent); background: #fff8e0; transform: translateY(-1px); }
+  .saved-chip.selected-chip { border-color: var(--accent); background: #fff8e0; }
+
+  .chip-type {
+    font-size: 0.65rem;
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .chip-type.chore { background: #ffe0ef; color: #c0366a; }
+  .chip-type.fun { background: #d8f2fd; color: #1a7fa0; }
+
+  .chip-x {
+    color: #ccc;
+    font-size: 0.8rem;
+    padding: 0 2px;
+    border-radius: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .chip-x:hover { color: #e05; }
+
+  .no-saved {
+    font-size: 0.82rem;
+    color: #c8c0b8;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  .modal-divider {
+    border: none;
+    border-top: 2px dashed #f0e8d8;
+    margin: 14px 0;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 2px solid #e0d8cc;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 14px;
+  }
+
+  .modal-input:focus { border-color: var(--accent); }
+
+  .modal-type-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .type-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .type-btn {
+    padding: 12px;
+    border-radius: 14px;
+    border: 2.5px solid #e0d8cc;
+    background: #fafafa;
+    cursor: pointer;
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .type-btn span.emoji { font-size: 1.6rem; }
+  .type-btn span.label { font-size: 0.9rem; }
+  .type-btn.chore { color: #888; }
+  .type-btn.chore.selected { border-color: var(--chore); background: #ffe0ef; color: #c0366a; box-shadow: 0 4px 14px rgba(255,126,179,0.25); }
+  .type-btn.fun { color: #888; }
+  .type-btn.fun.selected { border-color: var(--fun); background: #d8f2fd; color: #1a7fa0; box-shadow: 0 4px 14px rgba(91,200,245,0.25); }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .modal-cancel {
+    padding: 13px;
+    border: 2.5px solid #e0d8cc;
+    border-radius: 12px;
+    background: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: #aaa;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .modal-cancel:hover { border-color: #ccc; color: #888; }
+
+  .modal-confirm {
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: #5a4000;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #d4a800;
+    transition: all 0.12s;
+  }
+
+  .modal-confirm:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #d4a800; }
+  .modal-confirm:active { transform: translateY(1px); box-shadow: 0 1px 0 #d4a800; }
+  .modal-confirm:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  @keyframes popIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    80% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .slot.anim { animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+</style>
+</head>
+<body>
+
+<div class="planner">
+  <div class="header">
+    <h1>🗓️ My Day</h1>
+    <div class="date" id="dateLabel"></div>
+  </div>
+
+  <div class="card">
+    <div class="slot-list" id="slotList"></div>
+    <div class="btn-row">
+      <button class="add-btn" id="addBtn" onclick="openModal()">
+        <span style="font-size:1.3rem">＋</span> Add to My Day
+      </button>
+      <button class="clear-btn" id="clearBtn" onclick="clearAll()">
+        🗑️ Clear
+      </button>
+    </div>
+  </div>
+
+  <div class="mood-card">
+    <div class="mood-title">😊 Day Vibe Meter</div>
+    <div class="mood-bar-wrap">
+      <div class="mood-bar-indicator" id="moodIndicator">😊</div>
+    </div>
+    <div class="mood-labels">
+      <span>Super Fun!</span>
+      <span>All Work...</span>
+    </div>
+    <div class="mood-message" id="moodMessage">Add some tasks to your day!</div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <h2>✏️ Add a Task</h2>
+
+    <div class="saved-section">
+      <div class="saved-label">⚡ Quick Add — Recent Tasks</div>
+      <div class="saved-chips" id="savedChips"></div>
+    </div>
+
+    <hr class="modal-divider">
+
+    <input class="modal-input" id="taskInput" type="text" placeholder="Or type something new…" maxlength="40" />
+
+    <div class="modal-type-label">Type of task</div>
+    <div class="type-picker">
+      <button class="type-btn chore" id="btnChore" onclick="selectType('chore')">
+        <span class="emoji">🧹</span>
+        <span class="label">Chore</span>
+      </button>
+      <button class="type-btn fun" id="btnFun" onclick="selectType('fun')">
+        <span class="emoji">🎉</span>
+        <span class="label">Fun</span>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" id="confirmBtn" onclick="addTask()">Add It!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Register service worker for PWA / auto-update
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // Check for updates every time the app is opened
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available — reload silently to apply it
+            navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    });
+  }
+
+  const MAX_SLOTS = 5;
+  let selectedType = null;
+
+  const TODAY_KEY = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+  // Load tasks — clear if it's a new day
+  function loadTasks() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('planner_tasks') || 'null');
+      if (saved && saved.date === TODAY_KEY) return saved.tasks;
+    } catch {}
+    return [];
+  }
+
+  function saveTasks() {
+    try { localStorage.setItem('planner_tasks', JSON.stringify({ date: TODAY_KEY, tasks })); } catch {}
+  }
+
+  let tasks = loadTasks();
+
+  // History persists across days (localStorage)
+  let savedTasks = (() => {
+    try { return JSON.parse(localStorage.getItem('planner_history') || '[]'); }
+    catch { return []; }
+  })();
+
+  function persistHistory() {
+    try { localStorage.setItem('planner_history', JSON.stringify(savedTasks)); } catch {}
+  }
+
+  function addToHistory(name, type) {
+    savedTasks = savedTasks.filter(t => !(t.name.toLowerCase() === name.toLowerCase() && t.type === type));
+    savedTasks.unshift({ name, type });
+    if (savedTasks.length > 20) savedTasks = savedTasks.slice(0, 20);
+    persistHistory();
+  }
+
+  function removeFromHistory(idx) {
+    savedTasks.splice(idx, 1);
+    persistHistory();
+    renderChips();
+  }
+
+  const moods = [
+    { emoji: '🤩', msg: 'What an amazing day ahead!' },
+    { emoji: '😄', msg: 'Lots of fun on the horizon!' },
+    { emoji: '😊', msg: 'A nice balanced day!' },
+    { emoji: '😐', msg: 'Getting a little heavy on chores…' },
+    { emoji: '😟', msg: 'Too many chores! Add some fun!' },
+    { emoji: '😩', msg: 'Pure chore chaos. You need a break!' },
+  ];
+
+  document.getElementById('dateLabel').textContent =
+    new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function render() {
+    const list = document.getElementById('slotList');
+    list.innerHTML = '';
+
+    for (let i = 0; i < MAX_SLOTS; i++) {
+      const task = tasks[i];
+      const div = document.createElement('div');
+      div.className = 'slot' + (task ? ` filled ${task.type}` : '');
+
+      if (task) {
+        div.innerHTML = `
+          <div class="slot-number">${i + 1}</div>
+          <div class="slot-content">
+            <span class="slot-label ${task.type}">${task.type === 'chore' ? '🧹 Chore' : '🎉 Fun'}</span>
+            <div class="slot-task">${escHtml(task.name)}</div>
+          </div>
+          <button class="slot-done" onclick="completeTask(${i}, this)" title="Mark done">
+            <span class="done-check">✔</span>
+            <span class="done-label">Done</span>
+          </button>
+        `;
+      } else {
+        div.innerHTML = `
+          <div class="slot-number">${i + 1}</div>
+          <div class="slot-content"><div class="slot-empty-text">Empty slot</div></div>
+        `;
+      }
+
+      list.appendChild(div);
+    }
+
+    document.getElementById('addBtn').disabled = tasks.length >= MAX_SLOTS;
+    document.getElementById('clearBtn').disabled = tasks.length === 0;
+    updateMood();
+  }
+
+  function updateMood() {
+    const chores = tasks.filter(t => t.type === 'chore').length;
+    const total = tasks.length;
+    const indicator = document.getElementById('moodIndicator');
+    const msgEl = document.getElementById('moodMessage');
+
+    if (total === 0) {
+      indicator.style.left = '10%';
+      indicator.textContent = '😊';
+      msgEl.textContent = 'Add some tasks to your day!';
+      msgEl.style.color = '#aaa';
+      return;
+    }
+
+    const choreRatio = chores / total;
+    indicator.style.left = (5 + choreRatio * 90) + '%';
+
+    let level = choreRatio === 0 ? 0 : choreRatio <= 0.2 ? 1 : choreRatio <= 0.4 ? 2 : choreRatio <= 0.6 ? 3 : choreRatio <= 0.8 ? 4 : 5;
+    indicator.textContent = moods[level].emoji;
+    msgEl.textContent = moods[level].msg;
+    msgEl.style.color = ['#1a7fa0','#2da080','#b08020','#c06010','#b02060','#901040'][level];
+  }
+
+  function completeTask(i, btn) {
+    const slotEl = btn.closest('.slot');
+    const rect = btn.getBoundingClientRect();
+    burstStars(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    slotEl.classList.add('removing');
+    slotEl.addEventListener('animationend', () => {
+      tasks.splice(i, 1);
+      saveTasks();
+      render();
+    }, { once: true });
+  }
+
+  const STAR_EMOJIS = ['⭐','🌟','✨','💫','🎉','🌈','💥','🎊'];
+
+  function burstStars(cx, cy) {
+    const count = 10;
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'star-particle';
+      el.textContent = STAR_EMOJIS[Math.floor(Math.random() * STAR_EMOJIS.length)];
+      const angle = (360 / count) * i + (Math.random() - 0.5) * 30;
+      const dist = 60 + Math.random() * 60;
+      const rad = (angle * Math.PI) / 180;
+      el.style.left = cx + 'px';
+      el.style.top = cy + 'px';
+      el.style.setProperty('--dx', Math.cos(rad) * dist + 'px');
+      el.style.setProperty('--dy', Math.sin(rad) * dist + 'px');
+      el.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+      el.style.animationDelay = (Math.random() * 80) + 'ms';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  }
+
+  function clearAll() {
+    if (!tasks.length) return;
+    tasks = [];
+    saveTasks();
+    render();
+  }
+
+  // --- Chips ---
+  function renderChips() {
+    const container = document.getElementById('savedChips');
+    container.innerHTML = '';
+
+    if (!savedTasks.length) {
+      container.innerHTML = '<span class="no-saved">Tasks you add will appear here for quick re-use!</span>';
+      return;
+    }
+
+    savedTasks.forEach((t, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'saved-chip';
+
+      const typeSpan = document.createElement('span');
+      typeSpan.className = 'chip-type ' + t.type;
+      typeSpan.textContent = t.type === 'chore' ? '🧹' : '🎉';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = t.name;
+
+      const xSpan = document.createElement('span');
+      xSpan.className = 'chip-x';
+      xSpan.title = 'Remove from history';
+      xSpan.textContent = '✕';
+      xSpan.addEventListener('click', e => { e.stopPropagation(); removeFromHistory(i); });
+
+      chip.appendChild(typeSpan);
+      chip.appendChild(nameSpan);
+      chip.appendChild(xSpan);
+
+      chip.addEventListener('click', () => quickFill(t.name, t.type, chip));
+      container.appendChild(chip);
+    });
+  }
+
+  function quickFill(name, type, chipEl) {
+    document.getElementById('taskInput').value = name;
+    selectType(type);
+    document.querySelectorAll('.saved-chip').forEach(c => c.classList.remove('selected-chip'));
+    chipEl.classList.add('selected-chip');
+    checkConfirm();
+  }
+
+  // --- Modal ---
+  function openModal() {
+    if (tasks.length >= MAX_SLOTS) return;
+    selectedType = null;
+    document.getElementById('taskInput').value = '';
+    document.getElementById('btnChore').classList.remove('selected');
+    document.getElementById('btnFun').classList.remove('selected');
+    document.getElementById('confirmBtn').disabled = true;
+    renderChips();
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('taskInput').focus(), 200);
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function selectType(type) {
+    selectedType = type;
+    document.getElementById('btnChore').classList.toggle('selected', type === 'chore');
+    document.getElementById('btnFun').classList.toggle('selected', type === 'fun');
+    checkConfirm();
+  }
+
+  document.getElementById('taskInput').addEventListener('input', () => {
+    document.querySelectorAll('.saved-chip').forEach(c => c.classList.remove('selected-chip'));
+    checkConfirm();
+  });
+
+  function checkConfirm() {
+    const val = document.getElementById('taskInput').value.trim();
+    document.getElementById('confirmBtn').disabled = !(val && selectedType);
+  }
+
+  function addTask() {
+    const name = document.getElementById('taskInput').value.trim();
+    if (!name || !selectedType || tasks.length >= MAX_SLOTS) return;
+    tasks.push({ name, type: selectedType });
+    addToHistory(name, selectedType);
+    saveTasks();
+    closeModal();
+    render();
+
+    setTimeout(() => {
+      const slots = document.querySelectorAll('.slot');
+      const last = slots[tasks.length - 1];
+      if (last) {
+        last.classList.add('anim');
+        last.addEventListener('animationend', () => last.classList.remove('anim'), { once: true });
+      }
+    }, 20);
+  }
+
+  document.getElementById('taskInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  render();
+</script>
+</body>
+</html>
