@@ -20,15 +20,50 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fdf6ec;
+    --bg: #fef8f2;
+    --bg-grad1: #fde8e8;
+    --bg-grad2: #ddf0f8;
+    --bg-grad3: #fef3e2;
     --card: #ffffff;
+    --card-border: rgba(0,0,0,0.06);
     --chore: #ff7eb3;
     --fun: #5bc8f5;
-    --accent: #ffcc44;
+    --accent: #f5bc30;
+    --accent-shadow: #c99510;
     --text: #2d2d2d;
-    --muted: #aaa;
-    --shadow: 0 8px 32px rgba(0,0,0,0.10);
-    --radius: 20px;
+    --muted: #b8b0a8;
+    --slot-empty-bg: #f5f3f0;
+    --slot-empty-border: #dedad4;
+    --slot-filled-bg: #ffffff;
+    --slot-empty-text: #c8c2ba;
+    --input-bg: #f5f3f0;
+    --input-border: #dedad4;
+    --divider: #ece8e2;
+    --chip-bg: #f5f3f0;
+    --chip-border: #dedad4;
+    --shadow: 0 4px 24px rgba(0,0,0,0.07);
+    --radius: 22px;
+  }
+
+  body.dark {
+    --bg: #1a1714;
+    --bg-grad1: #2a1a22;
+    --bg-grad2: #141e2a;
+    --bg-grad3: #22200f;
+    --card: #252220;
+    --card-border: rgba(255,255,255,0.08);
+    --text: #f0ece4;
+    --muted: #888;
+    --slot-empty-bg: #1e1c1a;
+    --slot-empty-border: #3a3530;
+    --slot-filled-bg: #2d2a26;
+    --slot-empty-text: #5a5550;
+    --input-bg: #1e1c1a;
+    --input-border: #3a3530;
+    --divider: #3a3530;
+    --chip-bg: #1e1c1a;
+    --chip-border: #3a3530;
+    --shadow: 0 8px 32px rgba(0,0,0,0.35);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,9 +77,9 @@
     justify-content: center;
     padding: 40px 16px;
     background-image:
-      radial-gradient(circle at 10% 20%, #ffe0f0 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, #d0f0ff 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, #fff8dc 0%, transparent 60%);
+      radial-gradient(ellipse at 0% 0%, var(--bg-grad1) 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, var(--bg-grad2) 0%, transparent 55%);
+    transition: background-color 0.3s, background-image 0.3s;
   }
 
   .planner {
@@ -56,6 +91,32 @@
   }
 
   .header { text-align: center; }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .dark-toggle {
+    position: absolute;
+    right: 0;
+    background: var(--card);
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+
+  .dark-toggle:hover { transform: scale(1.1) rotate(15deg); }
 
   .header h1 {
     font-family: 'Fredoka One', cursive;
@@ -79,7 +140,7 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 24px;
-    border: 2px solid #f0e8d8;
+    border: 1.5px solid var(--card-border);
   }
 
   .slot-list {
@@ -92,23 +153,23 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #fafafa;
+    background: var(--slot-empty-bg);
     border-radius: 14px;
     padding: 14px 16px;
-    border: 2px dashed #e0d8cc;
+    border: 2px dashed var(--slot-empty-border);
     min-height: 64px;
     transition: border-color 0.2s, box-shadow 0.2s;
     position: relative;
   }
 
-  .slot.filled { border-style: solid; background: #fff; }
+  .slot.filled { border-style: solid; background: var(--slot-filled-bg); }
   .slot.filled.chore { border-color: var(--chore); }
   .slot.filled.fun { border-color: var(--fun); }
 
   .slot-number {
     font-family: 'Fredoka One', cursive;
     font-size: 1.4rem;
-    color: #ccc;
+    color: #c8c2ba;
     min-width: 28px;
     text-align: center;
     transition: color 0.2s;
@@ -138,11 +199,21 @@
   .slot-label.fun { background: #d8f2fd; color: #1a7fa0; }
 
   .slot-task { font-size: 1rem; font-weight: 700; color: var(--text); }
-  .slot-empty-text { font-size: 0.9rem; color: #c8c0b8; font-weight: 600; }
+  .slot-empty-text { font-size: 0.9rem; color: var(--slot-empty-text); font-weight: 600; }
+
+  .slot-time {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #b0a898;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 1px;
+  }
 
   .slot-done {
     background: none;
-    border: 2px solid #e0d8cc;
+    border: 2px solid var(--slot-empty-border);
     cursor: pointer;
     border-radius: 10px;
     padding: 5px 8px 4px;
@@ -220,21 +291,21 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px;
+    padding: 16px;
     border: none;
-    border-radius: 14px;
+    border-radius: 18px;
     background: var(--accent);
-    color: #5a4000;
+    color: #5a3c00;
     font-family: 'Fredoka One', cursive;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     letter-spacing: 0.05em;
     cursor: pointer;
-    box-shadow: 0 4px 0 #d4a800, 0 6px 16px rgba(255,200,0,0.3);
+    box-shadow: 0 5px 0 var(--accent-shadow), 0 8px 20px rgba(200,140,0,0.25);
     transition: transform 0.12s, box-shadow 0.12s;
   }
 
-  .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #d4a800, 0 10px 20px rgba(255,200,0,0.35); }
-  .add-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4a800; }
+  .add-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--accent-shadow), 0 12px 24px rgba(200,140,0,0.3); }
+  .add-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--accent-shadow); }
   .add-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
   .clear-btn {
@@ -243,15 +314,16 @@
     justify-content: center;
     gap: 6px;
     padding: 14px 18px;
-    border: 2.5px solid #e0d8cc;
-    border-radius: 14px;
-    background: white;
+    border: 1.5px solid var(--card-border);
+    border-radius: 18px;
+    background: var(--card);
     color: #b0a090;
     font-family: 'Fredoka One', cursive;
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.15s;
     white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
 
   .clear-btn:hover { border-color: #ff7eb3; color: #c0366a; background: #fff5f8; }
@@ -263,7 +335,7 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 22px 24px;
-    border: 2px solid #f0e8d8;
+    border: 1.5px solid var(--card-border);
   }
 
   .mood-title {
@@ -292,7 +364,7 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: white;
+    background: var(--card);
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     border: 3px solid #fff;
     display: flex;
@@ -342,7 +414,7 @@
   .modal-overlay.open { opacity: 1; pointer-events: all; }
 
   .modal {
-    background: white;
+    background: var(--card);
     border-radius: 24px;
     padding: 28px 24px 22px;
     width: 100%;
@@ -351,7 +423,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     transform: scale(0.92) translateY(20px);
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 2px solid #f0e8d8;
+    border: 2px solid var(--card-border);
     max-height: 90vh;
     overflow-y: auto;
   }
@@ -388,7 +460,7 @@
   }
 
   .saved-chips::-webkit-scrollbar { width: 4px; }
-  .saved-chips::-webkit-scrollbar-thumb { background: #e0d8cc; border-radius: 4px; }
+  .saved-chips::-webkit-scrollbar-thumb { background: var(--slot-empty-border); border-radius: 4px; }
 
   .saved-chip {
     display: inline-flex;
@@ -396,8 +468,8 @@
     gap: 5px;
     padding: 5px 8px 5px 8px;
     border-radius: 20px;
-    border: 2px solid #e8e0d6;
-    background: #fafafa;
+    border: 2px solid var(--chip-border);
+    background: var(--chip-bg);
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--text);
@@ -442,7 +514,7 @@
 
   .modal-divider {
     border: none;
-    border-top: 2px dashed #f0e8d8;
+    border-top: 2px dashed var(--divider);
     margin: 14px 0;
   }
 
@@ -450,18 +522,67 @@
     width: 100%;
     padding: 13px 16px;
     border-radius: 12px;
-    border: 2px solid #e0d8cc;
+    border: 2px solid var(--input-border);
     font-family: 'Nunito', sans-serif;
     font-size: 1rem;
     font-weight: 700;
     color: var(--text);
-    background: #fafafa;
+    background: var(--input-bg);
     outline: none;
     transition: border-color 0.2s;
     margin-bottom: 14px;
   }
 
   .modal-input:focus { border-color: var(--accent); }
+
+  .time-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .time-row label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .time-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid var(--input-border);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--input-bg);
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .time-input:focus { border-color: var(--accent); }
+
+  .time-clear {
+    background: none;
+    border: 2px solid var(--input-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    color: #bbb;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .time-clear:hover { border-color: #ccc; color: #888; }
 
   .modal-type-label {
     font-size: 0.72rem;
@@ -482,8 +603,8 @@
   .type-btn {
     padding: 12px;
     border-radius: 14px;
-    border: 2.5px solid #e0d8cc;
-    background: #fafafa;
+    border: 2.5px solid var(--input-border);
+    background: var(--input-bg);
     cursor: pointer;
     text-align: center;
     font-family: 'Fredoka One', cursive;
@@ -509,9 +630,9 @@
 
   .modal-cancel {
     padding: 13px;
-    border: 2.5px solid #e0d8cc;
+    border: 2.5px solid var(--input-border);
     border-radius: 12px;
-    background: white;
+    background: var(--card);
     font-family: 'Fredoka One', cursive;
     font-size: 1rem;
     color: #aaa;
@@ -551,7 +672,10 @@
 
 <div class="planner">
   <div class="header">
-    <h1>🗓️ My Day</h1>
+    <div class="header-top">
+      <h1>🗓️ My Day</h1>
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+    </div>
     <div class="date" id="dateLabel"></div>
   </div>
 
@@ -594,6 +718,12 @@
 
     <input class="modal-input" id="taskInput" type="text" placeholder="Or type something new…" maxlength="40" />
 
+    <div class="time-row">
+      <label>🕐 Time</label>
+      <input class="time-input" id="timeInput" type="time" />
+      <button class="time-clear" onclick="document.getElementById('timeInput').value=''">No time</button>
+    </div>
+
     <div class="modal-type-label">Type of task</div>
     <div class="type-picker">
       <button class="type-btn chore" id="btnChore" onclick="selectType('chore')">
@@ -634,6 +764,24 @@
   const MAX_SLOTS = 5;
   let selectedType = null;
 
+  // Dark mode
+  const darkBtn = document.getElementById('darkToggle');
+  let isDark = localStorage.getItem('planner_dark') === '1';
+
+  function applyDark() {
+    document.body.classList.toggle('dark', isDark);
+    darkBtn.textContent = isDark ? '☀️' : '🌙';
+    document.querySelector('meta[name="theme-color"]').content = isDark ? '#1a1714' : '#fdf6ec';
+  }
+
+  function toggleDark() {
+    isDark = !isDark;
+    localStorage.setItem('planner_dark', isDark ? '1' : '0');
+    applyDark();
+  }
+
+  applyDark();
+
   const TODAY_KEY = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
 
   // Load tasks — clear if it's a new day
@@ -661,9 +809,9 @@
     try { localStorage.setItem('planner_history', JSON.stringify(savedTasks)); } catch {}
   }
 
-  function addToHistory(name, type) {
+  function addToHistory(name, type, time) {
     savedTasks = savedTasks.filter(t => !(t.name.toLowerCase() === name.toLowerCase() && t.type === type));
-    savedTasks.unshift({ name, type });
+    savedTasks.unshift({ name, type, time: time || null });
     if (savedTasks.length > 20) savedTasks = savedTasks.slice(0, 20);
     persistHistory();
   }
@@ -700,11 +848,13 @@
       div.className = 'slot' + (task ? ` filled ${task.type}` : '');
 
       if (task) {
+        const timeDisplay = task.time ? `<div class="slot-time">🕐 ${formatTime(task.time)}</div>` : '';
         div.innerHTML = `
           <div class="slot-number">${i + 1}</div>
           <div class="slot-content">
             <span class="slot-label ${task.type}">${task.type === 'chore' ? '🧹 Chore' : '🎉 Fun'}</span>
             <div class="slot-task">${escHtml(task.name)}</div>
+            ${timeDisplay}
           </div>
           <button class="slot-done" onclick="completeTask(${i}, this)" title="Mark done">
             <span class="done-check">✔</span>
@@ -821,13 +971,14 @@
       chip.appendChild(nameSpan);
       chip.appendChild(xSpan);
 
-      chip.addEventListener('click', () => quickFill(t.name, t.type, chip));
+      chip.addEventListener('click', () => quickFill(t.name, t.type, t.time || null, chip));
       container.appendChild(chip);
     });
   }
 
-  function quickFill(name, type, chipEl) {
+  function quickFill(name, type, time, chipEl) {
     document.getElementById('taskInput').value = name;
+    document.getElementById('timeInput').value = time || '';
     selectType(type);
     document.querySelectorAll('.saved-chip').forEach(c => c.classList.remove('selected-chip'));
     chipEl.classList.add('selected-chip');
@@ -839,6 +990,7 @@
     if (tasks.length >= MAX_SLOTS) return;
     selectedType = null;
     document.getElementById('taskInput').value = '';
+    document.getElementById('timeInput').value = '';
     document.getElementById('btnChore').classList.remove('selected');
     document.getElementById('btnFun').classList.remove('selected');
     document.getElementById('confirmBtn').disabled = true;
@@ -872,21 +1024,38 @@
     document.getElementById('confirmBtn').disabled = !(val && selectedType);
   }
 
+  function formatTime(val) {
+    if (!val) return null;
+    const [h, m] = val.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+  }
+
   function addTask() {
     const name = document.getElementById('taskInput').value.trim();
     if (!name || !selectedType || tasks.length >= MAX_SLOTS) return;
-    tasks.push({ name, type: selectedType });
-    addToHistory(name, selectedType);
+    const timeVal = document.getElementById('timeInput').value || null;
+    tasks.push({ name, type: selectedType, time: timeVal });
+    // Sort tasks that have times to the top, ordered by time
+    tasks.sort((a, b) => {
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time) return -1;
+      if (b.time) return 1;
+      return 0;
+    });
+    addToHistory(name, selectedType, timeVal);
     saveTasks();
     closeModal();
     render();
 
     setTimeout(() => {
-      const slots = document.querySelectorAll('.slot');
-      const last = slots[tasks.length - 1];
-      if (last) {
-        last.classList.add('anim');
-        last.addEventListener('animationend', () => last.classList.remove('anim'), { once: true });
+      // Animate the slot that now contains this task
+      const slots = document.querySelectorAll('.slot.filled');
+      const target = Array.from(slots).find(s => s.querySelector('.slot-task')?.textContent === name);
+      if (target) {
+        target.classList.add('anim');
+        target.addEventListener('animationend', () => target.classList.remove('anim'), { once: true });
       }
     }, 20);
   }
